@@ -1,6 +1,7 @@
 package com.ecommerce.ecommerce.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,5 +20,13 @@ public class CategoryService {
 
     public void addCategory(Category category){
         repo.save(category);
+    }
+    
+    public void removeCategoryById(int id){
+        repo.deleteById(id);
+    }
+
+    public Optional<Category> getCategoryById(int id){
+        return repo.findById(id);
     }
 }
