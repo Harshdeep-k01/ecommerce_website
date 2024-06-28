@@ -27,5 +27,8 @@ public class ProductService {
     }
     public List<Product> getAllProductsByCategoryId(int id){
         return productrepo.findAllByCategory_Id(id);
-    } 
+    }
+    public void updateProduct(Product product) {
+        productrepo.save(product);
+    }
 }

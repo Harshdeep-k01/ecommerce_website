@@ -26,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class AdminController {
-    public static String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/productImage";
+    public static String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/productImages";
 
     @Autowired
     CategoryService categoryService;
@@ -88,43 +88,35 @@ public class AdminController {
     }
 
     @PostMapping("/admin/products/add")
-    public String productAddPost(@ModelAttribute("productDTO")ProductDTO productDTO, @RequestParam("productImage")MultipartFile file, @RequestParam("imgName")String imgName)throws IOException {
-        Product product = new Product();
-        product.setId(productDTO.getId());
-        product.setName(productDTO.getName());
-        product.setCategory(categoryService.getCategoryById(productDTO.getCategoryId()).get());
-        product.setPrice(productDTO.getPrice());
-        product.setWeight(productDTO.getWeight());
-        product.setDescription(productDTO.getDescription());
-        String imageUUId;
-        if (!file.isEmpty()) {
-            imageUUId = file.getOriginalFilename();
+    public String productAddPost(@ModelAttribute("productDTO") ProductDTO productDTO, 
+                             @RequestParam("productImage") MultipartFile file, 
+                             @RequestParam("imgName") String imgName) throws IOException {
+    Product product = new Product();
+    product.setId(productDTO.getId());
+    product.setName(productDTO.getName());
+    product.setCategory(categoryService.getCategoryById(productDTO.getCategoryId()).get());
+    product.setPrice(productDTO.getPrice());
+    product.setWeight(productDTO.getWeight());
+    product.setDescription(productDTO.getDescription());
 
-            // Ensure the upload directory exists
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
+    String imageUUID;
+    if (!file.isEmpty()) {
+        imageUUID = file.getOriginalFilename();
 
-            Path fileNameAndPath = uploadPath.resolve(imageUUId);
-
-            try {
-                Files.write(fileNameAndPath, file.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-                // Return an error page or message here
-                return "redirect:/admin/products?error";
-            }
-        } else {
-            imageUUId = imgName;
-        }
-
-        product.setImageName(imageUUId);
-        productService.addProduct(product);
-
-        return "redirect:/admin/products";
-    
+        // Ensure the upload directory exists
+        Path fileNameAndPath = Paths.get(uploadDir, imageUUID);
+        Files.write(fileNameAndPath, file.getBytes());
+    } else {
+        imageUUID = imgName;
     }
+
+    product.setImageName(imageUUID);
+    productService.addProduct(product);
+
+    return "redirect:/admin/products";
+}
+
+    
 
     //delete
     @GetMapping("/admin/product/delete/{id}")
@@ -134,23 +126,58 @@ public class AdminController {
     }
 
     //update
-    @GetMapping("/admin/product/update/{id}")
-    public String updateProductGet(@PathVariable long id, Model model) {
-        Product product = productService.getProductById(id).get();
-        ProductDTO productDTO = new ProductDTO();
-        productDTO.setId(product.getId());
-        productDTO. setName(product.getName());
-        productDTO.setCategoryId((product.getCategory().getId()));
-        productDTO.setPrice(product.getPrice());
-        productDTO.setWeight(product.getWeight());
-        productDTO.setDescription(product.getDescription());
-        productDTO.setImageName(product.getImageName());
-        model.addAttribute("categories", categoryService.getAllCategory());
-        model.addAttribute("ProductDTO", productDTO);
-        return "productsAdd" ;
-    }
-    
-    
+//     @GetMapping("/admin/product/update/{id}")
+//     public String updateProduct(@PathVariable long id, Model model) {
+//         Product product = productService.getProductById(id).get();
+//         ProductDTO productDTO = new ProductDTO();
+//         productDTO.setId(product.getId());
+//         productDTO. setName(product.getName());
+//         productDTO.setCategoryId((product.getCategory().getId()));
+//         productDTO.setPrice(product.getPrice());
+//         productDTO.setWeight(product.getWeight());
+//         productDTO.setDescription(product.getDescription());
+//         productDTO.setImageName(product.getImageName());
+//         model.addAttribute("categories", categoryService.getAllCategory());
+//         model.addAttribute("ProductDTO", productDTO);
+//         return "productsAdd" ;
+
+//     }
+
+//     @PostMapping("/admin/products/update")
+// public String postUpdateProduct(@ModelAttribute("productDTO") ProductDTO productDTO, 
+//                                 @RequestParam("productImage") MultipartFile file, 
+//                                 @RequestParam("imgName") String imgName) throws IOException {
+//     Optional<Product> optionalProduct = productService.getProductById(productDTO.getId());
+//     if (!optionalProduct.isPresent()) {
+//         return "404";
+//     }
+
+//     Product product = optionalProduct.get();
+//     product.setName(productDTO.getName());
+//     product.setCategory(categoryService.getCategoryById(productDTO.getCategoryId()).get());
+//     product.setPrice(productDTO.getPrice());
+//     product.setWeight(productDTO.getWeight());
+//     product.setDescription(productDTO.getDescription());
+
+//     String imageUUId;
+//     if (!file.isEmpty()) {
+//         imageUUId = file.getOriginalFilename();
+
+//         // Ensure the upload directory exists
+//         Path fileNameAndPath = Paths.get(uploadDir, imageUUId);
+//         Files.write(fileNameAndPath, file.getBytes());
+//     } else {
+//         imageUUId = imgName;
+//     }
+
+//     product.setImageName(imageUUId);
+//     productService.updateProduct(product);
+
+//     return "redirect:/admin/products";
+
+
+
+//      }
     
     
 
