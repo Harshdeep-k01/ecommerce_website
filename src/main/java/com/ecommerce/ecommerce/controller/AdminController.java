@@ -99,21 +99,33 @@ public class AdminController {
     product.setWeight(productDTO.getWeight());
     product.setDescription(productDTO.getDescription());
 
-    String imageUUID;
-    if (!file.isEmpty()) {
-        imageUUID = file.getOriginalFilename();
+    String imageUUId;
+        if (!file.isEmpty()) {
+            imageUUId = file.getOriginalFilename();
 
-        // Ensure the upload directory exists
-        Path fileNameAndPath = Paths.get(uploadDir, imageUUID);
-        Files.write(fileNameAndPath, file.getBytes());
-    } else {
-        imageUUID = imgName;
-    }
+            // Ensure the upload directory exists
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
 
-    product.setImageName(imageUUID);
-    productService.addProduct(product);
+            Path fileNameAndPath = uploadPath.resolve(imageUUId);
 
-    return "redirect:/admin/products";
+            try {
+                Files.write(fileNameAndPath, file.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Return an error page or message here
+                return "redirect:/admin/products?error";
+            }
+        } else {
+            imageUUId = imgName;
+        }
+
+        product.setImageName(imageUUId);
+        productService.addProduct(product);
+
+        return "redirect:/admin/products";
 }
 
     
@@ -126,58 +138,45 @@ public class AdminController {
     }
 
     //update
-//     @GetMapping("/admin/product/update/{id}")
-//     public String updateProduct(@PathVariable long id, Model model) {
-//         Product product = productService.getProductById(id).get();
-//         ProductDTO productDTO = new ProductDTO();
-//         productDTO.setId(product.getId());
-//         productDTO. setName(product.getName());
-//         productDTO.setCategoryId((product.getCategory().getId()));
-//         productDTO.setPrice(product.getPrice());
-//         productDTO.setWeight(product.getWeight());
-//         productDTO.setDescription(product.getDescription());
-//         productDTO.setImageName(product.getImageName());
-//         model.addAttribute("categories", categoryService.getAllCategory());
-//         model.addAttribute("ProductDTO", productDTO);
-//         return "productsAdd" ;
+    @GetMapping("/admin/products/update/{id}")
+public String updateProduct(@PathVariable long id, Model model) {
+    Optional<Product> optionalProduct = productService.getProductById(id);
+    if (!optionalProduct.isPresent()) {
+        return "404"; // Or handle not found scenario
+    }
+    Product product = optionalProduct.get();
+    ProductDTO productDTO = new ProductDTO();
+    productDTO.setId(product.getId());
+    // Map other fields from Product to ProductDTO
+    model.addAttribute("productDTO", productDTO);
+    model.addAttribute("categories", categoryService.getAllCategory());
+    return "productsAdd"; // Return your update form view
+}
 
-//     }
+    @PostMapping("/admin/products/update")
+    public String postUpdateProduct(@ModelAttribute("productDTO") ProductDTO productDTO, 
+                                    @RequestParam("productImage") MultipartFile file, 
+                                    @RequestParam("imgName") String imgName) throws IOException {
+        // Handling product update with file upload
+        String imageUUId = null;
+if (!file.isEmpty()) {
+    imageUUId = file.getOriginalFilename();
 
-//     @PostMapping("/admin/products/update")
-// public String postUpdateProduct(@ModelAttribute("productDTO") ProductDTO productDTO, 
-//                                 @RequestParam("productImage") MultipartFile file, 
-//                                 @RequestParam("imgName") String imgName) throws IOException {
-//     Optional<Product> optionalProduct = productService.getProductById(productDTO.getId());
-//     if (!optionalProduct.isPresent()) {
-//         return "404";
-//     }
+    // Ensure the upload directory exists
+    Path uploadPath = Paths.get(uploadDir);
+    if (!Files.exists(uploadPath)) {
+        Files.createDirectories(uploadPath);
+    }
 
-//     Product product = optionalProduct.get();
-//     product.setName(productDTO.getName());
-//     product.setCategory(categoryService.getCategoryById(productDTO.getCategoryId()).get());
-//     product.setPrice(productDTO.getPrice());
-//     product.setWeight(productDTO.getWeight());
-//     product.setDescription(productDTO.getDescription());
+    // Save the file to the upload directory
+    Path fileNameAndPath = uploadPath.resolve(imageUUId);
+    Files.write(fileNameAndPath, file.getBytes());
+} else {
+    imageUUId = imgName; // Use existing image name if no new file is uploaded
+}
 
-//     String imageUUId;
-//     if (!file.isEmpty()) {
-//         imageUUId = file.getOriginalFilename();
-
-//         // Ensure the upload directory exists
-//         Path fileNameAndPath = Paths.get(uploadDir, imageUUId);
-//         Files.write(fileNameAndPath, file.getBytes());
-//     } else {
-//         imageUUId = imgName;
-//     }
-
-//     product.setImageName(imageUUId);
-//     productService.updateProduct(product);
-
-//     return "redirect:/admin/products";
-
-
-
-//      }
+        return "redirect:/admin/products";
+    }
     
     
 
