@@ -138,46 +138,23 @@ public class AdminController {
     }
 
     //update
-    @GetMapping("/admin/products/update/{id}")
-public String updateProduct(@PathVariable long id, Model model) {
-    Optional<Product> optionalProduct = productService.getProductById(id);
-    if (!optionalProduct.isPresent()) {
-        return "404"; // Or handle not found scenario
+    @GetMapping("/admin/product/update/{id}")
+    public String updateProduct(@PathVariable long id, Model model) {
+        //fetch product from database
+        Product product = productService.getProductById(id).get();
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setId(product.getId());
+        productDTO.setName(product.getName());
+        productDTO.setCategoryId(product.getCategory().getId());
+        productDTO.setPrice(product.getPrice());
+        productDTO.setWeight(product.getWeight());
+        productDTO.setDescription(product.getDescription());
+        productDTO.setImageName(product.getImageName());
+
+        model.addAttribute("categories", categoryService.getAllCategory());
+        model.addAttribute("productDTO", productDTO);
+        return "productsAdd";
     }
-    Product product = optionalProduct.get();
-    ProductDTO productDTO = new ProductDTO();
-    productDTO.setId(product.getId());
-    // Map other fields from Product to ProductDTO
-    model.addAttribute("productDTO", productDTO);
-    model.addAttribute("categories", categoryService.getAllCategory());
-    return "productsAdd"; // Return your update form view
-}
-
-    @PostMapping("/admin/products/update")
-    public String postUpdateProduct(@ModelAttribute("productDTO") ProductDTO productDTO, 
-                                    @RequestParam("productImage") MultipartFile file, 
-                                    @RequestParam("imgName") String imgName) throws IOException {
-        // Handling product update with file upload
-        String imageUUId = null;
-if (!file.isEmpty()) {
-    imageUUId = file.getOriginalFilename();
-
-    // Ensure the upload directory exists
-    Path uploadPath = Paths.get(uploadDir);
-    if (!Files.exists(uploadPath)) {
-        Files.createDirectories(uploadPath);
-    }
-
-    // Save the file to the upload directory
-    Path fileNameAndPath = uploadPath.resolve(imageUUId);
-    Files.write(fileNameAndPath, file.getBytes());
-} else {
-    imageUUId = imgName; // Use existing image name if no new file is uploaded
-}
-
-        return "redirect:/admin/products";
-    }
-    
     
 
     
